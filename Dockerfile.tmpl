@@ -1,0 +1,10 @@
+FROM node:10.14.2
+
+USER node
+WORKDIR /opt/app
+
+ADD ##APP_NAME##/ ./
+RUN yarn install && yarn build
+
+EXPOSE 3002
+CMD ["yarn", "start"]

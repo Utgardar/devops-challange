@@ -1,0 +1,153 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-a
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- toYaml .Values.accelerationA.labels | nindent 4 }}
+spec:
+  replicas: {{ .Values.accelerationA.replicaCount }}
+  selector:
+    matchLabels:
+      {{- toYaml .Values.accelerationA.labels | nindent 6 }}
+  template:
+    metadata:
+    {{- with .Values.accelerationA.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        {{- toYaml .Values.accelerationA.labels | nindent 8 }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}-a
+          image: "library/{{ .Chart.Name }}-a"
+          ports:
+            - name: http
+              containerPort: {{ .Values.accelerationA.service.port }}
+              protocol: TCP
+          livenessProbe:
+            failureThreshold: 1
+            timeoutSeconds: 1
+            failureThreshold: 1
+            httpGet:
+              path: "/health"
+              port: http
+          readinessProbe:
+            failureThreshold: 1
+            timeoutSeconds: 1
+            failureThreshold: 1
+            httpGet:
+              path: "/health"
+              port: http
+          resources:
+            {{- toYaml .Values.accelerationA.resources | nindent 12 }}
+          env:
+            - name: WEB_PORT
+              value: "{{ .Values.accelerationA.service.port }}"
+          imagePullPolicy: IfNotPresent
+      restartPolicy: Always
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-dv
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- toYaml .Values.accelerationDv.labels | nindent 4 }}
+spec:
+  replicas: {{ .Values.accelerationDv.replicaCount }}
+  selector:
+    matchLabels:
+      {{- toYaml .Values.accelerationDv.labels | nindent 6 }}
+  template:
+    metadata:
+    {{- with .Values.accelerationDv.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        {{- toYaml .Values.accelerationDv.labels | nindent 8 }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}-dv
+          image: "library/{{ .Chart.Name }}-dv"
+          ports:
+            - name: http
+              containerPort: {{ .Values.accelerationDv.service.port }}
+              protocol: TCP
+          livenessProbe:
+            failureThreshold: 1
+            timeoutSeconds: 1
+            failureThreshold: 1
+            httpGet:
+              path: "/health"
+              port: http
+          readinessProbe:
+            failureThreshold: 1
+            timeoutSeconds: 1
+            failureThreshold: 1
+            httpGet:
+              path: "/health"
+              port: http
+          resources:
+            {{- toYaml .Values.accelerationDv.resources | nindent 12 }}
+          env:
+            - name: WEB_PORT
+              value: "{{ .Values.accelerationDv.service.port }}"
+          imagePullPolicy: IfNotPresent
+      restartPolicy: Always
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-calc
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- toYaml .Values.accelerationCalc.labels | nindent 4 }}
+spec:
+  replicas: {{ .Values.accelerationCalc.replicaCount }}
+  selector:
+    matchLabels:
+      {{- toYaml .Values.accelerationCalc.labels | nindent 6 }}
+  template:
+    metadata:
+    {{- with .Values.accelerationCalc.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        {{- toYaml .Values.accelerationCalc.labels | nindent 8 }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}-calc
+          image: "library/{{ .Chart.Name }}-calc"
+          ports:
+            - name: http
+              containerPort: {{ .Values.accelerationCalc.service.port }}
+              protocol: TCP
+          livenessProbe:
+            failureThreshold: 1
+            timeoutSeconds: 1
+            failureThreshold: 1
+            httpGet:
+              path: /health
+              port: http
+          readinessProbe:
+            failureThreshold: 1
+            timeoutSeconds: 1
+            failureThreshold: 1
+            httpGet:
+              path: /health
+              port: http
+          resources:
+            {{- toYaml .Values.accelerationCalc.resources | nindent 12 }}
+          env:
+            - name: WEB_PORT
+              value: "{{ .Values.accelerationCalc.service.port }}"
+            - name: DV_URL
+              value: http://{{ .Release.Name }}-dv-svc:{{ .Values.accelerationDv.service.port }}/dv
+            - name: A_URL
+              value: http://{{ .Release.Name }}-a-svc:{{ .Values.accelerationA.service.port }}/a
+          imagePullPolicy: IfNotPresent
+      restartPolicy: Always
